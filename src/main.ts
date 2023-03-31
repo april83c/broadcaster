@@ -227,7 +227,7 @@ app.post('/notify', jsonParser, async (req, res) => {
 			e: WebsocketEvent.NewNotification,
 			t: req.body.topic,
 			c: req.body.content // we could do checks to make sure theres no XSS here, but if a bad actor wanted to do XSS they could just spin up their own Broadcaster without the check, so we need to mitigate that in the client
-		}), (err) => { console.error('Failed to send notification: ' + err); });
+		}), (err) => { if (err) console.error('Failed to send notification: ' + err); });
 	}));
 
 	return res.status(200).json({
