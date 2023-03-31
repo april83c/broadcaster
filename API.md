@@ -9,39 +9,63 @@ GET /topics
 ```
 
 ```json
-["topic1", "topic2"]
+[
+	{
+		"id": "topic1",
+		"description": "Example topic"
+	},
+	{
+		"id": "topic2",
+		"description": "Another example"
+	}
+]
 ```
 
 ## POST /topics
 
 Creates a new topic, and returns the updated list of topics.
 
-Request body should be JSON, with `topic` being the name of the topic you want to create.
+Request body should be JSON of a Topic object.
 
 ```json
 POST /topics
 {
-	"topic": "topic2"
+	"id": "topic1",
+	"description": "Example topic"
 }
 ```
 
 ```json
-["topic1", "topic2"]
+[
+	{
+		"id": "topic1",
+		"description": "Example topic"
+	},
+	{
+		"id": "topic2",
+		"description": "Another example"
+	}
+]
 ```
 
 ## DELETE /topics
 
 Deletes a topic, and returns the updated list of topics.
 
-Request body should be JSON, with `topic` being the name of the topic you want to delete.
+Request body should be JSON, with `id` being the ID of the topic you want to delete.
 
 ```json
 DELETE /topics
 {
-	"topic": "topic2"
+	"id": "topic2"
 }
 ```
 
 ```json
-["topic1"]
+[
+	{
+		"id": "topic1",
+		"description": "Example topic"
+	}
+]
 ```

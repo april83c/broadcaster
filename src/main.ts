@@ -19,12 +19,18 @@ if (process.env.BROADCASTER_PORT == undefined
 	process.exit();
 }
 
+// types
+interface Topic { 
+	id: string,
+	description: string
+};
+
 // set up db
 let db = new JsonDB.JsonDB(new JsonDB.Config('data/database.json', true))
 
 db.getData('/topics').catch((reason) => {
 	console.log('db/topics doesn\'t exist, creating');
-	db.push('/topics', [] as Array<string>);
+	db.push('/topics', [] as Array<Topic>);
 });
 
 // set up server
@@ -35,52 +41,54 @@ let wsServer: ws.WebSocketServer = new ws.WebSocketServer({
 });
 
 app.get('/', async (req, res) => {
-	let topics = await db.getObject<Array<string>>('/topics');
+	let topics = await db.getObject<Array<Topic>>('/topics');
 	res.set('Content-Type', 'text/plain');
 	res.send(
 `${process.env.npm_package_name}/${process.env.npm_package_version} for ${process.env.BROADCASTER_HOSTNAME}
 
-${topics.length > 0 ? 'Topics: ' + topics : 'No topics registered'}`
+${topics.length == 1} ? ${topics.length} topic : ${topics.length} topics`
 	);
 });
 
 app.get('/topics', async (req, res) => {
-	let topics = await db.getObject<Array<string>>('/topics');
+	let topics = await db.getObject<Array<Topic>>('/topics');
 	res.status(200).json(topics);
 });
 
 app.post('/topics', jsonParser, async (req, res) => {
-	let topics = await db.getObject<Array<string>>('/topics');
-	let topicNameRegex = /^[a-zA-Z0-9_-]+$/;
-	console.log(req.body);
-	let topicName = req.body.topic as string;
+	let topics = await db.getObject<Array<Topic>>('/topics');
+	let topicIdRegex = /^[a-zA-Z0-9_-]+$/;
 
-	if (topicName == undefined) {
+	if (req.body.id == undefined || req.body.description == undefined) {
 		return res.status(400).json({
-			error: 'No topic name specified'
+			error: 'No topic ID and/or description specified'
 		});
 	}
-	if (!(topicNameRegex.test(topicName))) {
+
+	let topic: Topic = { id: req.body.id, description: req.body.description };
+
+	if (!(topicIdRegex.test(topic.id))) {
 		return res.status(400).json({
-			error: 'Topic name must match ' + topicNameRegex
+			error: 'Topic ID must match ' + topicIdRegex
 		}); // is this the wrong status code
 	}
-	if (topics.indexOf(topicName) != -1) {
+	if (topics.findIndex(t => t.id == topic.id) != -1) {
 		return res.status(400).json({
-			error: 'Topic with that name already exists'
+			error: 'Topic with that ID already exists'
 		});
 	}
 
-	topics.push(topicName);
+	// TODO: should we do any regex on the topic description? actually, probably not, because if XSS is possible on the client then that should be fixed on the client, because someone could just set up a malicious Broadcaster without that regex check
+	topics.push(topic);
 	db.push('/topics', topics);
 	return res.status(200).json(topics);
 });
 
 app.delete('/topics', jsonParser, async (req, res) => {
-	let topics = await db.getObject<Array<string>>('/topics');
-	let topicName = req.body.topic as string;
+	let topics = await db.getObject<Array<Topic>>('/topics');
+	let topicId = req.body.id as string;
 
-	let topicIndex = topics.indexOf(topicName);
+	let topicIndex = topics.findIndex(t => t.id == topicId);
 
 	if (topicIndex == -1) {
 		return res.status(400).json({
