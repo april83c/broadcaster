@@ -1,6 +1,8 @@
 # Broadcaster API documentation
 
-## GET /topics
+## Topics (HTTP)
+
+### GET /topics
 
 Returns the available topics as a JSON array.
 
@@ -21,7 +23,7 @@ GET /topics
 ]
 ```
 
-## POST /topics
+### POST /topics
 
 Creates a new topic, and returns the updated list of topics.
 
@@ -48,7 +50,7 @@ POST /topics
 ]
 ```
 
-## DELETE /topics
+### DELETE /topics
 
 Deletes a topic, and returns the updated list of topics.
 
@@ -69,3 +71,16 @@ DELETE /topics
 	}
 ]
 ```
+
+## Listen (WebSocket)
+
+Connect to `/listen`. All messages should be in JSON and contain a `e` (stands for event) property saying what kind of message (from the below) it is.
+
+### Server → Client: new notification
+
+Properties:
+- `e` (event): `1` (`WebsocketMessage.NewNotification`)
+- `t` (topic): the Topic ID of the notification 
+	- (this could be a topic the client isn't aware of but does actually exist (i.e. got added later), so don't error if this is an unknown topic!)
+- `c` (content): the content of the notification
+	- 1000 character limit
