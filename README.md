@@ -2,12 +2,16 @@
 
 Service to broadcast notifications over websockets for osuplace
 
-## Usage
+## Installation
 
 1. `yarn install`
 2. Copy `.env.example` to `.env` and edit `.env` to configure the app
 3. `yarn run build`
 4. `yarn start`
+
+## Usage
+
+See [API.md](https://github.com/osuplace/broadcaster/blob/main/API.md).
 
 ## Development setup
 
