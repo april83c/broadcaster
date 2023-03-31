@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "module": "ES2015",
-    "target": "ES6",
+    "module": "Node16",
+    "target": "ES2022",
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "noImplicitAny": true,
-    "moduleResolution": "node",
     "outDir": "dist",
     "rootDir": "src"
   },
