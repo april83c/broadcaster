@@ -222,13 +222,16 @@ app.post('/notify', jsonParser, async (req, res) => {
 		});
 	}
 
+	let notificationJson = JSON.stringify({
+		e: WebsocketEvent.NewNotification,
+		t: req.body.topic,
+		c: req.body.content // we could do checks to make sure theres no XSS here, but if a bad actor wanted to do XSS they could just spin up their own Broadcaster without the check, so we need to mitigate that in the client
+	});
+
 	listeners.forEach(((ws) => {
-		ws.send(JSON.stringify({
-			e: WebsocketEvent.NewNotification,
-			t: req.body.topic,
-			c: req.body.content // we could do checks to make sure theres no XSS here, but if a bad actor wanted to do XSS they could just spin up their own Broadcaster without the check, so we need to mitigate that in the client
-		}), (err) => { if (err) console.error('Failed to send notification: ' + err); });
+		ws.send(notificationJson, (err) => { if (err) console.error('Failed to send notification: ' + err); });
 	}));
+	console.log(`Sent notification on topic ${req.body.topic}: ${req.body.content}`)
 
 	return res.status(200).json({
 		count: listeners.length

@@ -15,6 +15,14 @@ Service to broadcast notifications over websockets for osuplace
 
 See [API.md](https://github.com/osuplace/broadcaster/blob/main/API.md).
 
+### Panel
+
+For humans, there's a panel/GUI at `/panel`.
+
+### Logging
+
+By default, Broadcaster does not log outgoing notifications to a file. However, it does log them to `stdout`, so if you'd like a log of the notifications, you can just save that to a file.
+
 ## Development setup
 
 To get modules to work correctly in Visual Studio Code:
