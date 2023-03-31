@@ -9,6 +9,8 @@ import * as JsonDB from 'node-json-db';
 import { default as express } from 'express';
 import * as url from 'url';
 import * as ws from 'ws';
+import { default as BodyParser } from 'body-parser';
+let jsonParser = BodyParser.json();
 
 // check for environment variables
 if (process.env.BROADCASTER_PORT == undefined
@@ -40,6 +42,56 @@ app.get('/', async (req, res) => {
 
 ${topics.length > 0 ? 'Topics: ' + topics : 'No topics registered'}`
 	);
+});
+
+app.get('/topics', async (req, res) => {
+	let topics = await db.getObject<Array<string>>('/topics');
+	res.status(200).json(topics);
+});
+
+app.post('/topics', jsonParser, async (req, res) => {
+	let topics = await db.getObject<Array<string>>('/topics');
+	let topicNameRegex = /^[a-zA-Z0-9_-]+$/;
+	console.log(req.body);
+	let topicName = req.body.topic as string;
+
+	if (topicName == undefined) {
+		return res.status(400).json({
+			error: 'No topic name specified'
+		});
+	}
+	if (!(topicNameRegex.test(topicName))) {
+		return res.status(400).json({
+			error: 'Topic name must match ' + topicNameRegex
+		}); // is this the wrong status code
+	}
+	if (topics.indexOf(topicName) != -1) {
+		return res.status(400).json({
+			error: 'Topic with that name already exists'
+		});
+	}
+
+	topics.push(topicName);
+	db.push('/topics', topics);
+	return res.status(200).json(topics);
+});
+
+app.delete('/topics', jsonParser, async (req, res) => {
+	let topics = await db.getObject<Array<string>>('/topics');
+	let topicName = req.body.topic as string;
+
+	let topicIndex = topics.indexOf(topicName);
+
+	if (topicIndex == -1) {
+		return res.status(400).json({
+			error: 'No topic with that name exists'
+		});
+	}
+
+	topics.splice(topicIndex, 1);
+	
+	db.push('/topics', topics);
+	return res.status(200).json(topics);
 })
 
 app.listen(process.env.BROADCASTER_PORT, () => {
