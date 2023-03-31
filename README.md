@@ -2,6 +2,8 @@
 
 Service to broadcast notifications over websockets for osuplace
 
+> ⚠️ This is a work in progress and is **not ready for production use**.
+
 ## Installation
 
 1. `yarn install`
