@@ -1,0 +1,17 @@
+{
+  "name": "broadcaster",
+  "version": "1.0.0",
+  "description": "Service to broadcast notifications over websockets for osuplace",
+  "main": "dist/main.js",
+  "repository": "https://gitlab.com/aprilnya/broadcaster",
+  "author": "April <april@dummy.cafe>",
+  "license": "UNLICENSED",
+  "packageManager": "yarn@3.5.0",
+  "dependencies": {
+    "typescript": "^5.0.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node ."
+  }
+}
