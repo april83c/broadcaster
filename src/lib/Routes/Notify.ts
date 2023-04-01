@@ -12,7 +12,7 @@ import { wsWithHeartbeat } from './Listen.js';
 function notifyAPI(db: JsonDB.JsonDB, listeners: Array<wsWithHeartbeat>) {
 	const router = express.Router();
 
-	router.post('/notify', jsonParser, async (req, res) => {
+	router.post('/notify', checkAuth(PermissionLevel.SendMessages), jsonParser, async (req, res) => {
 		if (req.body.topic == undefined || req.body.content == undefined) {
 			return res.status(400).json({
 				error: "No topic and/or content specified"

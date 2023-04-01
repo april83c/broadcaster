@@ -24,6 +24,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/cookie-parser@npm:^1.4.3":
+  version: 1.4.3
+  resolution: "@types/cookie-parser@npm:1.4.3"
+  dependencies:
+    "@types/express": "*"
+  checksum: f390f3af1b1711190dee2c2ecd9af33af81fbde8d81ee820dadb6fe1e0d80c3faba40af37c6ed36fb88b04b64870f6a021f7e9edceecd17c42fe22abe0af5005
+  languageName: node
+  linkType: hard
+
 "@types/cors@npm:^2.8.13":
   version: 2.8.13
   resolution: "@types/cors@npm:2.8.13"
@@ -97,7 +106,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/passport@npm:^1.0.12":
+"@types/oauth@npm:*, @types/oauth@npm:^0.9.1":
+  version: 0.9.1
+  resolution: "@types/oauth@npm:0.9.1"
+  dependencies:
+    "@types/node": "*"
+  checksum: 5c079611b455eff58fba6358e028b191a1e65475600f8ed8d98c1696fedcfb0290aa6c6a19cf50f21a9e2d816ecb43a19f910900d91f8ba3727e33c48f97d7f3
+  languageName: node
+  linkType: hard
+
+"@types/passport-oauth2@npm:^1.4.12":
+  version: 1.4.12
+  resolution: "@types/passport-oauth2@npm:1.4.12"
+  dependencies:
+    "@types/express": "*"
+    "@types/oauth": "*"
+    "@types/passport": "*"
+  checksum: ff39f486529420d624c776835c54e46cc91c110b9620a96679e9a6391c330ff613f5ae5e3232317b1a7c05591652e906caf51d2d30b2bc28e50c8c3a3e5cf14d
+  languageName: node
+  linkType: hard
+
+"@types/passport@npm:*, @types/passport@npm:^1.0.12":
   version: 1.0.12
   resolution: "@types/passport@npm:1.0.12"
   dependencies:
@@ -250,16 +279,19 @@ __metadata:
   resolution: "broadcaster@workspace:."
   dependencies:
     "@types/body-parser": ^1.19.2
+    "@types/cookie-parser": ^1.4.3
     "@types/cors": ^2.8.13
     "@types/ejs": ^3.1.2
     "@types/express": ^4.17.17
     "@types/express-session": ^1.17.7
     "@types/express-ws": ^3.0.1
     "@types/node": ^18.15.11
+    "@types/oauth": ^0.9.1
     "@types/passport": ^1.0.12
+    "@types/passport-oauth2": ^1.4.12
     "@types/ws": ^8.5.4
     body-parser: ^1.20.2
-    chalk: ^5.2.0
+    cookie-parser: ^1.4.6
     cors: ^2.8.5
     dotenv: ^16.0.3
     ejs: ^3.1.9
@@ -267,7 +299,9 @@ __metadata:
     express-session: ^1.17.3
     express-ws: ^5.0.2
     node-json-db: ^2.1.5
+    oauth: ^0.10.0
     passport: ^0.6.0
+    passport-oauth2: ^1.7.0
     passport-reddit: ^1.1.0
     typescript: ^5.0.3
     url: ^0.11.0
@@ -299,13 +333,6 @@ __metadata:
     ansi-styles: ^4.1.0
     supports-color: ^7.1.0
   checksum: fe75c9d5c76a7a98d45495b91b2172fa3b7a09e0cc9370e5c8feb1c567b85c4288e2b3fded7cfdd7359ac28d6b3844feb8b82b8686842e93d23c827c417e83fc
-  languageName: node
-  linkType: hard
-
-"chalk@npm:^5.2.0":
-  version: 5.2.0
-  resolution: "chalk@npm:5.2.0"
-  checksum: 03d8060277de6cf2fd567dc25fcf770593eb5bb85f460ce443e49255a30ff1242edd0c90a06a03803b0466ff0687a939b41db1757bec987113e83de89a003caa
   languageName: node
   linkType: hard
 
@@ -348,10 +375,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cookie-parser@npm:^1.4.6":
+  version: 1.4.6
+  resolution: "cookie-parser@npm:1.4.6"
+  dependencies:
+    cookie: 0.4.1
+    cookie-signature: 1.0.6
+  checksum: 1e5a63aa82e8eb4e02d2977c6902983dee87b02e87ec5ec43ac3cb1e72da354003716570cd5190c0ad9e8a454c9d3237f4ad6e2f16d0902205a96a1c72b77ba5
+  languageName: node
+  linkType: hard
+
 "cookie-signature@npm:1.0.6":
   version: 1.0.6
   resolution: "cookie-signature@npm:1.0.6"
   checksum: f4e1b0a98a27a0e6e66fd7ea4e4e9d8e038f624058371bf4499cfcd8f3980be9a121486995202ba3fca74fbed93a407d6d54d43a43f96fd28d0bd7a06761591a
+  languageName: node
+  linkType: hard
+
+"cookie@npm:0.4.1":
+  version: 0.4.1
+  resolution: "cookie@npm:0.4.1"
+  checksum: bd7c47f5d94ab70ccdfe8210cde7d725880d2fcda06d8e375afbdd82de0c8d3b73541996e9ce57d35f67f672c4ee6d60208adec06b3c5fc94cebb85196084cf8
   languageName: node
   linkType: hard
 
@@ -744,6 +788,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"oauth@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "oauth@npm:0.10.0"
+  checksum: 68fbcd9fc382985fd6a4856245bb9f78281c08ea238e814288c51e6cfb65e442c9c4eea67d54ec595384eb3f007e7b64ae3b8e67ec309228df44aba64cc9e0c7
+  languageName: node
+  linkType: hard
+
 "object-assign@npm:^4":
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
@@ -781,7 +832,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-oauth2@npm:^1.6":
+"passport-oauth2@npm:^1.6, passport-oauth2@npm:^1.7.0":
   version: 1.7.0
   resolution: "passport-oauth2@npm:1.7.0"
   dependencies:

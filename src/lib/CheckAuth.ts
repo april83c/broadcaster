@@ -3,7 +3,9 @@ import { default as express } from 'express';
 
 export function checkAuth(requiredLevel: PermissionLevel) {
 	return (req: express.Request, res: express.Response, next: express.NextFunction) => {
-		if (req.user == undefined) return res.redirect('/auth/reddit');
+		if (req.user == undefined) {
+			return res.cookie('authReturnURL', req.url).redirect('/auth/reddit');
+		}
 
 		let user = req.user as User;
 		if (user.permissionLevel < requiredLevel) {

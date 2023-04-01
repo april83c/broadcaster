@@ -1,5 +1,6 @@
 import * as JsonDB from 'node-json-db';
 import * as passport from 'passport';
+import { Request } from 'express';
 
 /*
 	# Types
@@ -23,8 +24,8 @@ interface User extends Express.User {
 	# Functions (for Passport)
 */
 
-function redditCallback(db: JsonDB.JsonDB) {
-	return (_accessToken: any, _refreshToken: any, profile: any, done: passport.DoneCallback) => {
+function redditVerify(db: JsonDB.JsonDB) {
+	return (req: Request, _accessToken: any, _refreshToken: any, profile: any, done: passport.DoneCallback) => {
 		// profile has: id, name, link_karma, comment_karma, _raw, _json
 		// source: https://github.com/Slotos/passport-reddit/blob/main/lib/passport-reddit/strategy.js#L153
 		db.getObject<User>(`/users/reddit-${profile.id}`).then((user) => {
@@ -34,7 +35,7 @@ function redditCallback(db: JsonDB.JsonDB) {
 			user.authUsername = profile.name;
 			db.push(`/users/reddit-${profile.id}`, user);
 			done(null, user);
-		}).catch((reason: string) => {
+		}).catch((reason: JsonDB.DataError) => {
 			let user: User = {
 				authProvider: 'reddit',
 				authId: profile.id,
@@ -43,8 +44,8 @@ function redditCallback(db: JsonDB.JsonDB) {
 				permissionLevel: PermissionLevel.None
 			};
 
-			console.log('REASON FOR GETOBJECT CREATING PROFILE:' + reason);
-			if (reason.endsWith('Stopped at /users')) {
+			//console.log('REASON FOR GETOBJECT CREATING PROFILE:' + reason);
+			if (reason.toString().endsWith('Stopped at users')) {
 				console.log(`${user.authUsername} (${user.authId}) is the first user, setting PermissionLevel to Manage`);
 				user.permissionLevel = PermissionLevel.Manage;
 			}
@@ -77,4 +78,4 @@ function deserializeUser(db: JsonDB.JsonDB) {
 	The deserializeUser function is called when a request is made and the session needs to be re-established. Its purpose is to retrieve the user's information from the session using the identifying information stored by serializeUser. In this example, we retrieve the user's information from the database using their authId. If the retrieval is successful, we pass the user object to the done callback as the second argument. If there's an error, we pass the error object as the first argument and null as the second argument.
 */
 
-export { User, PermissionLevel, redditCallback, serializeUser, deserializeUser }
+export { User, PermissionLevel, redditVerify, serializeUser, deserializeUser }
