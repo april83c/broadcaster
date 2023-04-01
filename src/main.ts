@@ -16,6 +16,7 @@ import * as JsonDB from 'node-json-db';
 import { default as express, Express } from 'express';
 import { default as BodyParser } from 'body-parser';
 let jsonParser = BodyParser.json();
+import { default as cookieParser } from 'cookie-parser';
 import { default as cors } from 'cors';
 
 import { default as expressWs } from 'express-ws';
@@ -32,6 +33,7 @@ import { RedditStrategy } from './lib/RedditStrategy.js';
 import { User, PermissionLevel, redditVerify, serializeUser, deserializeUser } from './lib/Users.js';
 import { Topic, WebsocketEvent } from './lib/APITypes.js';
 
+import { JsonDBSessionStore } from './lib/JsonDBSessionStore.js';
 import { checkAuth } from './lib/CheckAuth.js';
 
 import { topicsAPI } from './lib/Routes/Topics.js';
@@ -71,8 +73,10 @@ app.use(expressSession({
 	resave: false,
 	saveUninitialized: false,
 	//cookie: { secure: true }
-	cookie: { sameSite: false }
+	cookie: { sameSite: false },
+	store: new JsonDBSessionStore(db)
 }));
+//app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session()); // we could make this NOT be app level middleware, so that we dont have it on routes that dont need auth, but if youre not authed it only makes ~0.05ms difference than not having it, so it doesn't really matter
 app.set('view engine', 'ejs');
@@ -83,46 +87,38 @@ passport.use(new RedditStrategy({
 	clientSecret: process.env.BROADCASTER_REDDIT_CONSUMER_SECRET,
 	callbackURL: new URL('/auth/reddit/callback', process.env.BROADCASTER_BASEURL).toString(),
 	scope: ['identity'],
-	state: false
+	state: false,
+	passReqToCallback: true
 }, redditVerify(db)));
 
 passport.serializeUser(serializeUser);
 passport.deserializeUser(deserializeUser(db));
 
 // API routes
-app.options('/', cors());
-app.get('/', cors(), async (req, res) => {
-	let topics = await db.getObject<Array<Topic>>('/topics');
-	res.set('Content-Type', 'text/plain');
-	res.send(
-`${process.env.npm_package_name}/${process.env.npm_package_version} for ${process.env.BROADCASTER_BASEURL}
 
-${topics.length == 1 ? topics.length + ' topic' : topics.length + ' topics'}`
-	);
-});
-
+// Auth endpoints
 app.get('/auth/reddit', passport.authenticate('reddit', {
 	//state: 'fortniteburger'
 }));
 app.get('/auth/reddit/callback', passport.authenticate('reddit', {
-	//successRedirect: '/bossbaby',
+	successRedirect: '/',
 	//failureRedirect: '/loserbaby', // TODO: change these back to / lol
 	failureMessage: true,
 	//state: 'fortniteburger'
-}, (req: express.Request, res: express.Response) => {
-	if (req.cookies['authReturnURL']) {
+}/*, cookieParser(), (req: express.Request, res: express.Response) => {
+	console.log(req);
+	if (req && req.cookies['authReturnURL']) {
+		if (req.cookies['authReturnURL'])
 		res.redirect(req.cookies['authReturnURL']);
 	} else {
-		res.redirect(new URL('/', req.hostname).toString());
+		res.redirect(new URL('/', process.env.BROADCASTER_BASEURL).toString()); // baseurl envvar here and not hostname in case req doesn't exist
 	}
-}));
-
-app.get('/loserbaby', (req, res) => {
-	console.log('loserbaby meow');
-	//@ts-ignore
-	console.log(req.session);
-	//@ts-ignore
-	res.send(req.session);
+}*/));
+app.post('/auth/logout', (req, res) => {
+	req.logout((error) => {
+		if (error) return res.status(500).send(error);
+		res.redirect('/');
+	})
 });
 
 // Topics API
@@ -136,9 +132,9 @@ app.use(listenAPIRouter);
 app.use(notifyAPI(db, listeners));
 
 // Panel (user interface for humans to use the API)
-app.get('/panel', checkAuth(PermissionLevel.SendMessages), (req, res) => {
-	// TODO: auth
-	res.render('panel');
+app.get('/', /*checkAuth(PermissionLevel.SendMessages), */async (req, res) => {
+	let topics = await db.getObject<Array<Topic>>('/topics');
+	res.render('panel', { user: req.user, topics: topics, listenerCount: listeners.length });
 });
 
 app.listen(process.env.BROADCASTER_PORT, () => {

@@ -22,17 +22,18 @@ interface RedditStrategyOptions {
     skipUserProfile?: any;
     pkce?: boolean | undefined;
     proxy?: any;
+    passReqToCallback: true
 }
 
 class RedditStrategy extends OAuth2.Strategy {
-    constructor(options: RedditStrategyOptions, verify: OAuth2.VerifyFunction) {
+    constructor(options: RedditStrategyOptions, verify: OAuth2.VerifyFunctionWithRequest) {
         options = options;
         options.customHeaders = options.customHeaders || {};
         options.authorizationURL = options.authorizationURL || 'https://www.reddit.com/api/v1/authorize';
         options.tokenURL = options.tokenURL || 'https://www.reddit.com/api/v1/access_token';
         options.scopeSeparator = options.scopeSeparator || ' ';
 
-        super(options as OAuth2.StrategyOptions, verify)
+        super(options as OAuth2.StrategyOptionsWithRequest, verify)
 
         this._oauth2.useAuthorizationHeaderforGET(true); 
         this.name = "reddit";

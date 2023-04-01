@@ -1,5 +1,6 @@
 import * as JsonDB from 'node-json-db';
 import * as passport from 'passport';
+import { Request } from 'express';
 
 /*
 	# Types
@@ -24,9 +25,7 @@ interface User extends Express.User {
 */
 
 function redditVerify(db: JsonDB.JsonDB) {
-	return (_accessToken: any, _refreshToken: any, profile: any, done: passport.DoneCallback) => {
-		console.log('reddit verify: ' + profile)
-		console.log(profile);
+	return (req: Request, _accessToken: any, _refreshToken: any, profile: any, done: passport.DoneCallback) => {
 		// profile has: id, name, link_karma, comment_karma, _raw, _json
 		// source: https://github.com/Slotos/passport-reddit/blob/main/lib/passport-reddit/strategy.js#L153
 		db.getObject<User>(`/users/reddit-${profile.id}`).then((user) => {
@@ -45,7 +44,7 @@ function redditVerify(db: JsonDB.JsonDB) {
 				permissionLevel: PermissionLevel.None
 			};
 
-			console.log('REASON FOR GETOBJECT CREATING PROFILE:' + reason);
+			//console.log('REASON FOR GETOBJECT CREATING PROFILE:' + reason);
 			if (reason.toString().endsWith('Stopped at users')) {
 				console.log(`${user.authUsername} (${user.authId}) is the first user, setting PermissionLevel to Manage`);
 				user.permissionLevel = PermissionLevel.Manage;
@@ -57,13 +56,11 @@ function redditVerify(db: JsonDB.JsonDB) {
 }
 
 function serializeUser(user: User, done: passport.DoneCallback) {
-	console.log('serializing user: ' + user)
 	done(null, user.authProvider + '-' + user.authId);
 };
 
 function deserializeUser(db: JsonDB.JsonDB) {
 	return async (userPath: string, done: passport.DoneCallback) => {
-		console.log('deseralizing user: ' + userPath)
 		try {
 			let user = await db.getObject<User>(`/users/${userPath}`);
 			done(null, user);

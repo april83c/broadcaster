@@ -18,7 +18,7 @@ function topicsAPI(db: JsonDB.JsonDB) {
 		res.status(200).json(topics);
 	});
 
-	router.post('/topics', jsonParser, checkAuth(PermissionLevel.Manage), async (req: express.Request, res: express.Response) => {
+	router.post('/topics', checkAuth(PermissionLevel.Manage), jsonParser, async (req: express.Request, res: express.Response) => {
 		if (req.body.id == undefined || req.body.description == undefined) {
 			return res.status(400).json({
 				error: 'No topic ID and/or description specified'
@@ -47,7 +47,7 @@ function topicsAPI(db: JsonDB.JsonDB) {
 		return res.status(200).json(topics);
 	});
 
-	router.delete('/topics', jsonParser, async (req, res) => {
+	router.delete('/topics', checkAuth(PermissionLevel.Manage), jsonParser, async (req, res) => {
 		let topics = await db.getObject<Array<Topic>>('/topics');
 		let topicId = req.body.id as string;
 

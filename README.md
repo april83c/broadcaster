@@ -10,6 +10,7 @@ Service to broadcast notifications over websockets for osuplace
 2. Copy `.env.example` to `.env` and edit `.env` to configure the app
 3. `yarn run build`
 4. `yarn start`
+5. ⚠️ **IMPORTANT**: The first user that signs into a Broadcaster instance gets Manage permissions. So, you should open it in your browser and sign in now.
 
 ## Usage
 

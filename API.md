@@ -6,6 +6,8 @@
 
 Returns the available topics as a JSON array.
 
+Required permission level: None
+
 ```
 GET /topics
 ```
@@ -29,6 +31,8 @@ GET /topics
 Creates a new topic, and returns the updated list of topics.
 
 Request body should be JSON of a Topic object.
+
+Required permission level: 2 (Manage)
 
 ```json
 POST /topics
@@ -58,6 +62,8 @@ Deletes a topic, and returns the updated list of topics.
 
 Request body should be JSON, with `id` being the ID of the topic you want to delete.
 
+Required permission level: 2 (Manage)
+
 ```json
 DELETE /topics
 {
@@ -83,6 +89,8 @@ Sends a notification to a topic*, and returns the number of people notified.
 
 Request body should be JSON, with `topic` being the ID of the topic you want to send to, and `content` being the content of the notification.
 
+Required permission level: 1 (SendMessages)
+
 *It actually gets sent to everyone, since there's no mechanism to specify to the server what topics you're subscribed to. But the topic is specified in the message so the client can filter it out.
 
 ```json
@@ -103,6 +111,8 @@ POST /notify
 ## Listen (WebSocket)
 
 Connect to `/listen`. All messages should be in JSON and contain a `e` (stands for event) property saying what kind of message (from the below) it is.
+
+Required permission level: None
 
 ### Server → Client: new notification
 

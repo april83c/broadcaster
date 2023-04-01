@@ -1,1 +1,216 @@
-haiiiii
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<title>Broadcaster</title>
+
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+
+	<script>
+		function logout() {
+			let request = fetch('/auth/logout', {
+				method: "POST"
+			}).then((response) => {
+				if(!response.ok) {
+					alert('Error logging out: ' + response.status);
+					console.error('Error logging out: ' + response.status);
+				}
+				location.reload();
+			}).catch((error) => {
+				console.error(error);
+				alert(error);
+			});
+		}
+		
+		function addTopic() {
+			let topicId = document.getElementById('topicform-id');
+			let topicDescription = document.getElementById('topicform-description');
+			
+			let data = JSON.stringify({
+				id: topicId.value,
+				description: topicDescription.value
+			});
+			
+			let request = fetch('/topics', {
+				method: "POST",
+				body: data,
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).then((response) => {
+				return response.json();
+			}).then((response) => {
+				if (response.error) {
+					alert(response.error);
+				} else {
+					location.reload();
+				}
+			}).catch((error) => {
+				alert(error);
+			})
+		}
+
+		function notify() {
+			let topic = document.getElementById('notifyform-topic');
+			let content = document.getElementById('notifyform-content');
+			
+			let data = JSON.stringify({
+				topic: topic.value,
+				content: content.value
+			});
+			
+			let request = fetch('/notify', {
+				method: "POST",
+				body: data,
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).then((response) => {
+				return response.json();
+			}).then((response) => {
+				if (response.error) {
+					alert(response.error);
+				} else {
+					alert(`Success! Notified ${response.count} people.`);
+				}
+			}).catch((error) => {
+				alert(error);
+			})
+		}
+
+		function deleteTopic(id) {
+			let topicToDelete = id.substring(7);
+
+			let data = JSON.stringify({
+				id: topicToDelete
+			});
+			
+			let request = fetch('/topics', {
+				method: "DELETE",
+				body: data,
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).then((response) => {
+				return response.json();
+			}).then((response) => {
+				if (response.error) {
+					alert(response.error);
+				} else {
+					location.reload();
+				}
+			}).catch((error) => {
+				alert(error);
+			})
+		}
+	</script>
+
+	<style>
+		.tile {
+			background-color: var(--background);
+			border-radius: 6px;
+			padding: 1rem;
+			margin: 0.5rem;
+			text-align: center;
+		}
+
+		.tile-1-3 {
+			width: calc(33% - 3rem);
+		}
+
+		.tile .big {
+			font-size: xx-large;
+			font-weight: bold;
+			margin-top: 0;
+			margin-bottom: 0;
+		}
+
+		.tile-row {
+			display: flex;
+			flex-direction: row;
+		}
+		
+		.topic-form {
+			display: flex; flex-direction: row;
+		}
+
+		@media screen and (max-width: 800px) {
+			.tile-row {
+				flex-direction: column;
+			}
+			.tile-row .tile-1-3 {
+				width: calc(100% - 4rem);
+			}
+			.topic-form {
+				flex-direction: column;
+			}
+			.topic-form input {
+				width: calc(100% - 20px) !important;
+			}
+			.topic-form button {
+				width: 100% !important;
+			}
+		}
+
+		
+	</style>
+</head>
+<body>
+	<h1>Broadcaster Panel </h1>
+	<% if (user) { %>
+		<p>Welcome, <b><%= user.authUsername %></b> · <a href="#" onclick="logout()">Log out</a></p>
+	<% } else { %>
+		<p>You are not logged in · <a href="/auth/reddit">Log in with Reddit</a></p>
+	<% } %>
+	<div class="tile-row">
+		<div class="tile tile-1-3"><p class="big"><%= topics.length %></p>topics</div>
+		<div class="tile tile-1-3"><p class="big"><%= listenerCount %></p>listeners</div>
+		<div class="tile tile-1-3"><p class="big"><%= user ? user.permissionLevel : 'None' %></p>your permission level</div>
+	</div>	
+
+	<h2>Notify</h2>
+	<% if (user && user.permissionLevel >= 1) { %>
+		<form class="notify-form">
+			<textarea style="width: calc(100% - 6px)" id="notifyform-content" name="Content" placeholder="Content"></textarea>
+			<div class="topic-form">
+				<select style="width: 50%;" id="notifyform-topic" name="Topic">
+					<% for (let i = 0; i < topics.length; i++) { %>
+						<option value="<%= topics[i].id %>"><%= topics[i].id %></option>
+					<% } %>
+				</select>
+				<button style="width: 50%" type="button" onclick="notify()">Notify</button>
+			</div>
+		</form>
+	<% } %>
+
+	<h2>Topics</h2>
+	<table>
+		<tr>
+			<% if (user && user.permissionLevel >= 2) { %>
+				<th style="width: 1em"></th>
+			<% } %>
+			<th style="width: 33.3%">ID</th>
+			<th style="width: 66.6%">Description</th>
+		</tr>
+		<% for (let i = 0; i < topics.length; i++) { %>
+			<tr>
+				<% if (user && user.permissionLevel >= 2) { %>
+					<td style="width: 1em"><a href="#" id="delete-<%= topics[i].id %>" onclick="deleteTopic(this.id)">×</a><!--<img style="width: 1em; height: 1em; vertical-align:text-bottom;">--></td>
+				<% } %>
+				<td style="width: 33.3%"><%= topics[i].id %></td>
+				<td style="width: 66.6%"><%= topics[i].description %></td>
+			</tr>
+		<% } %>
+	</table>
+	<% if (user && user.permissionLevel >= 2) { %>
+		<form class="topic-form">
+			<input style="width: calc(25% - 26px);" type="text" id="topicform-id" name="ID" placeholder="Topic ID">
+			<input style="width: calc(50% - 26px);" type="text" id="topicform-description" name="Description" placeholder="Description">
+			<button style="width: 25%" type="button" onclick="addTopic()">Add topic</button>
+		</form>
+	<% } %>
+</body>
+</html>
