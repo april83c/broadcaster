@@ -64,7 +64,7 @@ db.getData('/topics').catch((reason) => {
 passport.use(new RedditStrategy({
 	clientID: process.env.BROADCASTER_REDDIT_CONSUMER_KEY,
 	clientSecret: process.env.BROADCASTER_REDDIT_CONSUMER_SECRET,
-	callbackURL: new URL('/auth/reddit/callback', process.env.BROADCASTER_BASEURL)
+	callbackURL: new URL('/auth/reddit/callback', process.env.BROADCASTER_BASEURL).toString()
 }, 
 (_accessToken: any, _refreshToken: any, profile: any, done: passport.DoneCallback) => {
 	// profile has: id, name, link_karma, comment_karma, _raw, _json
@@ -85,7 +85,7 @@ passport.use(new RedditStrategy({
 			permissionLevel: PermissionLevel.None
 		};
 
-		console.log(reason);
+		console.log('REASON FOR GETOBJECT CREATING PROFILE:' + reason);
 		if (reason.endsWith('Stopped at /users')) {
 			console.log(`${user.authUsername} (${user.authId}) is the first user, setting PermissionLevel to Manage`);
 			user.permissionLevel = PermissionLevel.Manage;
@@ -120,6 +120,22 @@ await db.getObject<string>('/sessionSecret').catch((error) => {
 	db.push('/sessionSecret', crypto.randomBytes(128).toString('hex'));
 });
 
+function checkAuth(requiredLevel: PermissionLevel) {
+	return (req: express.Request, res: express.Response, next: express.NextFunction) => {
+		if (req.user == undefined) return res.redirect('/auth/reddit');
+
+		let user = req.user as User;
+		if (user.permissionLevel < requiredLevel) {
+			return res.status(403).json({
+				error: 'You are not authorized to do this'
+			});
+		}
+
+		return next();
+	}
+}
+
+
 // set up servers
 let wsInstance = expressWs(express());
 let app = wsInstance.app; // we have to do this like this, or else TS doesnt think the stuff that expressWs adds exists
@@ -139,11 +155,17 @@ app.get('/', cors(), async (req, res) => {
 	let topics = await db.getObject<Array<Topic>>('/topics');
 	res.set('Content-Type', 'text/plain');
 	res.send(
-`${process.env.npm_package_name}/${process.env.npm_package_version} for ${process.env.BROADCASTER_HOSTNAME}
+`${process.env.npm_package_name}/${process.env.npm_package_version} for ${process.env.BROADCASTER_BASEURL}
 
-${topics.length == 1} ? ${topics.length} topic : ${topics.length} topics`
+${topics.length == 1 ? topics.length + ' topic' : topics.length + ' topics'}`
 	);
 });
+
+app.get('/auth/reddit', passport.authenticate('reddit'));
+app.get('/auth/reddit/callback', passport.authenticate('reddit', {
+	successRedirect: '/',
+	failureRedirect: '/'
+}));
 
 // Topics API
 app.options('/topics', cors({ allowedHeaders: 'GET' }));
@@ -152,15 +174,15 @@ app.get('/topics', cors(), async (req, res) => {
 	res.status(200).json(topics);
 });
 
-app.post('/topics', jsonParser, async (req, res) => {
-	let topics = await db.getObject<Array<Topic>>('/topics');
-	let topicIdRegex = /^[a-zA-Z0-9_-]+$/;
-
+app.post('/topics', jsonParser, checkAuth(PermissionLevel.Manage), async (req: express.Request, res: express.Response) => {
 	if (req.body.id == undefined || req.body.description == undefined) {
 		return res.status(400).json({
 			error: 'No topic ID and/or description specified'
 		});
 	}
+
+	let topics = await db.getObject<Array<Topic>>('/topics');
+	let topicIdRegex = /^[a-zA-Z0-9_-]+$/;
 
 	let topic: Topic = { id: req.body.id, description: req.body.description };
 
