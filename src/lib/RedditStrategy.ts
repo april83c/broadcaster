@@ -40,7 +40,6 @@ class RedditStrategy extends OAuth2.Strategy {
         function getAccessToken(code: string, callback: oauth2tokenCallback): void;
         function getAccessToken(code: string, params: any, callback: oauth2tokenCallback): void;
         function getAccessToken(code: string, paramsOrCallback: any | oauth2tokenCallback, callback?: oauth2tokenCallback): void {
-            console.log('getAccessToken: ' + code + ' ' + paramsOrCallback)
             var params: any;
             if (!callback) { // I don't actually have any idea whether this is necessary or not. But I think it is from looking at docs
                 callback = paramsOrCallback;
@@ -49,10 +48,12 @@ class RedditStrategy extends OAuth2.Strategy {
                 params = params || {};
             }
             params.type = 'web_server';
+            params.grant_type = 'authorization_code';
+            params.redirect_uri = options.callbackURL;
 
             var codeParam = (params.grant_type === 'refresh_token') ? 'refresh_token' : 'code';
             params[codeParam]= code;
-    
+
             var post_data= (new URLSearchParams(params)).toString();
             var authorization = "Basic " + Buffer.from("" + this._clientId + ":" + this._clientSecret).toString('base64');
             var post_headers= {
@@ -61,13 +62,14 @@ class RedditStrategy extends OAuth2.Strategy {
             };
     
             this._request("POST", this._getAccessTokenUrl(), post_headers, post_data, null, (error: any, data: any, response: any) => { // FIXME: all of this is any ;-;
-                if (error) callback(error, null, null, null);
-                else {
+                if (error) {
+                    callback(error, null, null, null);
+                } else {
                     var results = JSON.parse( data );
                     var access_token = results.access_token;
                     var refresh_token = results.refresh_token;
                     delete results.refresh_token;
-                    callback(null, access_token, refresh_token, results); // callback results =-=
+                    callback(null, access_token, refresh_token, results); // callback results =^.^=
                 }
             });
         }
@@ -76,12 +78,12 @@ class RedditStrategy extends OAuth2.Strategy {
     }
 
     userProfile(accessToken: string, done: passport.DoneCallback) {
-        console.log('userProfile: ');
         this._oauth2.get('https://oauth.reddit.com/api/v1/me', accessToken, (err: any, body: any) => {
             if (err || body instanceof Buffer || body === undefined) 
                 return done(new InternalOAuthError('Failed to fetch the user profile.', err))
             try {
                 const json = JSON.parse(body);
+                if (!json.id || !json.name) { return done(new InternalOAuthError('Failed to get user profile (response does not contain id and/or name)', null)) };
                 const parsedData = {
                     _raw: body,
                     _json: json,
@@ -98,8 +100,7 @@ class RedditStrategy extends OAuth2.Strategy {
     }
 
     authorizationParams(options: any) {
-        console.log('authorizationParams: ')
-        return { duration: "temporary" };
+        return { duration: "temporary", state: "meow" };
     }
 }
 

@@ -26,6 +26,7 @@ interface User extends Express.User {
 function redditVerify(db: JsonDB.JsonDB) {
 	return (_accessToken: any, _refreshToken: any, profile: any, done: passport.DoneCallback) => {
 		console.log('reddit verify: ' + profile)
+		console.log(profile);
 		// profile has: id, name, link_karma, comment_karma, _raw, _json
 		// source: https://github.com/Slotos/passport-reddit/blob/main/lib/passport-reddit/strategy.js#L153
 		db.getObject<User>(`/users/reddit-${profile.id}`).then((user) => {
@@ -35,7 +36,7 @@ function redditVerify(db: JsonDB.JsonDB) {
 			user.authUsername = profile.name;
 			db.push(`/users/reddit-${profile.id}`, user);
 			done(null, user);
-		}).catch((reason: string) => {
+		}).catch((reason: JsonDB.DataError) => {
 			let user: User = {
 				authProvider: 'reddit',
 				authId: profile.id,
@@ -45,7 +46,7 @@ function redditVerify(db: JsonDB.JsonDB) {
 			};
 
 			console.log('REASON FOR GETOBJECT CREATING PROFILE:' + reason);
-			if (reason.endsWith('Stopped at /users')) {
+			if (reason.toString().endsWith('Stopped at users')) {
 				console.log(`${user.authUsername} (${user.authId}) is the first user, setting PermissionLevel to Manage`);
 				user.permissionLevel = PermissionLevel.Manage;
 			}

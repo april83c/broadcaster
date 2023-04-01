@@ -10,9 +10,6 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-import { Chalk } from 'chalk';
-let chalk = new Chalk();
-
 import * as JsonDB from 'node-json-db';
 
 // server stuff imports
@@ -62,18 +59,6 @@ db.getData('/topics').catch((reason) => {
 	db.push('/topics', [] as Array<Topic>);
 });
 
-// set up authentication
-passport.use(new RedditStrategy({
-	clientID: process.env.BROADCASTER_REDDIT_CONSUMER_KEY,
-	clientSecret: process.env.BROADCASTER_REDDIT_CONSUMER_SECRET,
-	callbackURL: new URL('/auth/reddit/callback', process.env.BROADCASTER_BASEURL).toString(),
-	scope: ['identity'],
-	state: 'fortniteburger'
-}, redditVerify(db)));
-
-passport.serializeUser(serializeUser);
-passport.deserializeUser(deserializeUser(db));
-
 await db.getObject<string>('/sessionSecret').catch((error) => {
 	db.push('/sessionSecret', crypto.randomBytes(128).toString('hex'));
 });
@@ -85,11 +70,24 @@ app.use(expressSession({
 	secret: await db.getObject<string>('/sessionSecret') as string, // intentionally not catching here
 	resave: false,
 	saveUninitialized: false,
-	cookie: { secure: true }
+	//cookie: { secure: true }
+	cookie: { sameSite: false }
 }));
 app.use(passport.initialize());
 app.use(passport.session()); // we could make this NOT be app level middleware, so that we dont have it on routes that dont need auth, but if youre not authed it only makes ~0.05ms difference than not having it, so it doesn't really matter
 app.set('view engine', 'ejs');
+
+// set up authentication
+passport.use(new RedditStrategy({
+	clientID: process.env.BROADCASTER_REDDIT_CONSUMER_KEY,
+	clientSecret: process.env.BROADCASTER_REDDIT_CONSUMER_SECRET,
+	callbackURL: new URL('/auth/reddit/callback', process.env.BROADCASTER_BASEURL).toString(),
+	scope: ['identity'],
+	state: false
+}, redditVerify(db)));
+
+passport.serializeUser(serializeUser);
+passport.deserializeUser(deserializeUser(db));
 
 // API routes
 app.options('/', cors());
@@ -103,16 +101,28 @@ ${topics.length == 1 ? topics.length + ' topic' : topics.length + ' topics'}`
 	);
 });
 
-app.get('/auth/reddit', passport.authenticate('reddit'));
+app.get('/auth/reddit', passport.authenticate('reddit', {
+	//state: 'fortniteburger'
+}));
 app.get('/auth/reddit/callback', passport.authenticate('reddit', {
-	successRedirect: '/bossbaby',
-	failureRedirect: '/loserbaby', // TODO: change these back to / lol
-	failureMessage: true
+	//successRedirect: '/bossbaby',
+	//failureRedirect: '/loserbaby', // TODO: change these back to / lol
+	failureMessage: true,
+	//state: 'fortniteburger'
+}, (req: express.Request, res: express.Response) => {
+	if (req.cookies['authReturnURL']) {
+		res.redirect(req.cookies['authReturnURL']);
+	} else {
+		res.redirect(new URL('/', req.hostname).toString());
+	}
 }));
 
 app.get('/loserbaby', (req, res) => {
+	console.log('loserbaby meow');
 	//@ts-ignore
-	res.send(req.session.messages);
+	console.log(req.session);
+	//@ts-ignore
+	res.send(req.session);
 });
 
 // Topics API
