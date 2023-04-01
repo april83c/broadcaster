@@ -1,7 +1,7 @@
 {
   "name": "broadcaster",
   "type": "module",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Service to broadcast notifications over websockets for osuplace",
   "main": "dist/main.js",
   "repository": "https://github.com/osuplace/broadcaster",
