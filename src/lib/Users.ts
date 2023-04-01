@@ -23,8 +23,9 @@ interface User extends Express.User {
 	# Functions (for Passport)
 */
 
-function redditCallback(db: JsonDB.JsonDB) {
+function redditVerify(db: JsonDB.JsonDB) {
 	return (_accessToken: any, _refreshToken: any, profile: any, done: passport.DoneCallback) => {
+		console.log('reddit verify: ' + profile)
 		// profile has: id, name, link_karma, comment_karma, _raw, _json
 		// source: https://github.com/Slotos/passport-reddit/blob/main/lib/passport-reddit/strategy.js#L153
 		db.getObject<User>(`/users/reddit-${profile.id}`).then((user) => {
@@ -55,11 +56,13 @@ function redditCallback(db: JsonDB.JsonDB) {
 }
 
 function serializeUser(user: User, done: passport.DoneCallback) {
+	console.log('serializing user: ' + user)
 	done(null, user.authProvider + '-' + user.authId);
 };
 
 function deserializeUser(db: JsonDB.JsonDB) {
 	return async (userPath: string, done: passport.DoneCallback) => {
+		console.log('deseralizing user: ' + userPath)
 		try {
 			let user = await db.getObject<User>(`/users/${userPath}`);
 			done(null, user);
@@ -77,4 +80,4 @@ function deserializeUser(db: JsonDB.JsonDB) {
 	The deserializeUser function is called when a request is made and the session needs to be re-established. Its purpose is to retrieve the user's information from the session using the identifying information stored by serializeUser. In this example, we retrieve the user's information from the database using their authId. If the retrieval is successful, we pass the user object to the done callback as the second argument. If there's an error, we pass the error object as the first argument and null as the second argument.
 */
 
-export { User, PermissionLevel, redditCallback, serializeUser, deserializeUser }
+export { User, PermissionLevel, redditVerify, serializeUser, deserializeUser }

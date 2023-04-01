@@ -28,11 +28,11 @@ import { default as expressSession } from 'express-session';
 import * as crypto from 'crypto';
 
 import { default as passport } from 'passport';
-import { RedditStrategy } from 'passport-reddit';
+import { RedditStrategy } from './lib/RedditStrategy.js';
 
 
 // our imports
-import { User, PermissionLevel, redditCallback, serializeUser, deserializeUser } from './lib/Users.js';
+import { User, PermissionLevel, redditVerify, serializeUser, deserializeUser } from './lib/Users.js';
 import { Topic, WebsocketEvent } from './lib/APITypes.js';
 
 import { checkAuth } from './lib/CheckAuth.js';
@@ -66,8 +66,10 @@ db.getData('/topics').catch((reason) => {
 passport.use(new RedditStrategy({
 	clientID: process.env.BROADCASTER_REDDIT_CONSUMER_KEY,
 	clientSecret: process.env.BROADCASTER_REDDIT_CONSUMER_SECRET,
-	callbackURL: new URL('/auth/reddit/callback', process.env.BROADCASTER_BASEURL).toString()
-}, redditCallback(db)));
+	callbackURL: new URL('/auth/reddit/callback', process.env.BROADCASTER_BASEURL).toString(),
+	scope: ['identity'],
+	state: 'fortniteburger'
+}, redditVerify(db)));
 
 passport.serializeUser(serializeUser);
 passport.deserializeUser(deserializeUser(db));
@@ -103,9 +105,15 @@ ${topics.length == 1 ? topics.length + ' topic' : topics.length + ' topics'}`
 
 app.get('/auth/reddit', passport.authenticate('reddit'));
 app.get('/auth/reddit/callback', passport.authenticate('reddit', {
-	successRedirect: '/',
-	failureRedirect: '/'
+	successRedirect: '/bossbaby',
+	failureRedirect: '/loserbaby', // TODO: change these back to / lol
+	failureMessage: true
 }));
+
+app.get('/loserbaby', (req, res) => {
+	//@ts-ignore
+	res.send(req.session.messages);
+});
 
 // Topics API
 app.use(topicsAPI(db)); // FIXME: mount to /topics specifically
@@ -118,7 +126,7 @@ app.use(listenAPIRouter);
 app.use(notifyAPI(db, listeners));
 
 // Panel (user interface for humans to use the API)
-app.get('/panel', (req, res) => {
+app.get('/panel', checkAuth(PermissionLevel.SendMessages), (req, res) => {
 	// TODO: auth
 	res.render('panel');
 });

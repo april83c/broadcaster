@@ -97,7 +97,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/passport@npm:^1.0.12":
+"@types/oauth@npm:*, @types/oauth@npm:^0.9.1":
+  version: 0.9.1
+  resolution: "@types/oauth@npm:0.9.1"
+  dependencies:
+    "@types/node": "*"
+  checksum: 5c079611b455eff58fba6358e028b191a1e65475600f8ed8d98c1696fedcfb0290aa6c6a19cf50f21a9e2d816ecb43a19f910900d91f8ba3727e33c48f97d7f3
+  languageName: node
+  linkType: hard
+
+"@types/passport-oauth2@npm:^1.4.12":
+  version: 1.4.12
+  resolution: "@types/passport-oauth2@npm:1.4.12"
+  dependencies:
+    "@types/express": "*"
+    "@types/oauth": "*"
+    "@types/passport": "*"
+  checksum: ff39f486529420d624c776835c54e46cc91c110b9620a96679e9a6391c330ff613f5ae5e3232317b1a7c05591652e906caf51d2d30b2bc28e50c8c3a3e5cf14d
+  languageName: node
+  linkType: hard
+
+"@types/passport@npm:*, @types/passport@npm:^1.0.12":
   version: 1.0.12
   resolution: "@types/passport@npm:1.0.12"
   dependencies:
@@ -256,7 +276,9 @@ __metadata:
     "@types/express-session": ^1.17.7
     "@types/express-ws": ^3.0.1
     "@types/node": ^18.15.11
+    "@types/oauth": ^0.9.1
     "@types/passport": ^1.0.12
+    "@types/passport-oauth2": ^1.4.12
     "@types/ws": ^8.5.4
     body-parser: ^1.20.2
     chalk: ^5.2.0
@@ -267,7 +289,9 @@ __metadata:
     express-session: ^1.17.3
     express-ws: ^5.0.2
     node-json-db: ^2.1.5
+    oauth: ^0.10.0
     passport: ^0.6.0
+    passport-oauth2: ^1.7.0
     passport-reddit: ^1.1.0
     typescript: ^5.0.3
     url: ^0.11.0
@@ -744,6 +768,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"oauth@npm:^0.10.0":
+  version: 0.10.0
+  resolution: "oauth@npm:0.10.0"
+  checksum: 68fbcd9fc382985fd6a4856245bb9f78281c08ea238e814288c51e6cfb65e442c9c4eea67d54ec595384eb3f007e7b64ae3b8e67ec309228df44aba64cc9e0c7
+  languageName: node
+  linkType: hard
+
 "object-assign@npm:^4":
   version: 4.1.1
   resolution: "object-assign@npm:4.1.1"
@@ -781,7 +812,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-oauth2@npm:^1.6":
+"passport-oauth2@npm:^1.6, passport-oauth2@npm:^1.7.0":
   version: 1.7.0
   resolution: "passport-oauth2@npm:1.7.0"
   dependencies:
