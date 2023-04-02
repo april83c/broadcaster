@@ -14,3 +14,7 @@
 	- You can have empty topic description
 	- You can have empty notification content
 	- Wrong error message if deleting a topic with `topic: topicId` instead of `id: topicId`
+- Multithreading??
+	- Separate API and Websocket thread?
+	- Spread listeners across threads??
+- Redis
