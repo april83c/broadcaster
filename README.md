@@ -1,6 +1,6 @@
 # Broadcaster
 
-Service to broadcast notifications over websockets for osuplace
+Service to broadcast notifications over websockets for factions on canvas games that use [TemplateManager](https://github.com/osuplace/templateManager)
 
 ## Installation
 
