@@ -12,7 +12,7 @@ Service to broadcast notifications over websockets for canvas game factions that
 
 ## Usage
 
-See [API.md](https://github.com/osuplace/broadcaster/blob/main/API.md).
+See [API.md](https://github.com/april83c/broadcaster/blob/main/API.md).
 
 ### Panel
 
