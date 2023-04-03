@@ -16,7 +16,7 @@ See [API.md](https://github.com/april83c/broadcaster/blob/main/API.md).
 
 ### Panel
 
-For humans, there's a panel/GUI at `/panel`.
+For humans, there's a panel/GUI at `/`.
 
 ### Logging
 
