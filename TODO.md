@@ -18,3 +18,5 @@
 	- Separate API and Websocket thread?
 	- Spread listeners across threads??
 - Redis
+- Rate limiting
+	- Cloudflare/nginx change IPs!!

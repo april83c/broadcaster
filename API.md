@@ -8,7 +8,7 @@ Returns the available topics as a JSON array.
 
 Required permission level: None
 
-```
+```json
 GET /topics
 ```
 
@@ -79,6 +79,106 @@ DELETE /topics
 		"description": "Example topic"
 	}
 ]
+```
+
+## Users (HTTP)
+
+### GET /users
+
+Returns the specified User, if they exist.
+
+Request body should be JSON, with:
+
+- `authProvider`: the service the user uses to log in. For now, this can only be `reddit`.
+- `authId`: the id of the user in the authentication provider.
+
+Required permission level: 2 (Manage)
+
+```json
+GET /users
+{
+	"authProvider": "reddit",
+	"authId": "7qne6haa9"
+}
+```
+
+```json
+200 OK
+{
+	"authProvider": "reddit",
+	"authId": "7qne6haa9",
+	"authUsername": "april83c",
+	"permissionLevel": 3
+}
+```
+
+### GET /users/me
+
+Returns the User currently logged in.
+
+Required permission level: 0 (None, but logged in)
+
+```json
+GET /users/me
+```
+
+```json
+200 OK
+{
+	"authProvider": "reddit",
+	"authId": "7qne6haa9",
+	"authUsername": "april83c",
+	"permissionLevel": 3
+}
+```
+
+### POST /users
+
+Changes something about a user, and then returns the updated User.
+
+Request body should be JSON, with:
+
+- `authProvider`: the service the user uses to log in. For now, this can only be `reddit`.
+- `authId`: the id of the user in the authentication provider.
+- The properties you want to change, which can be the following:
+	- `permissionLevel`: the permission level of the user (number 0-3 as defined in `enum PermissionLevel` of [lib/Users.ts](https://github.com/april83c/broadcaster/blob/main/src/lib/Users.ts))
+
+Restrictions:
+- You can't change the permission level of a user with the same permission level as you, **unless your permission level is Owner (3), in which case you can change the permission level of anyone including other owners.**
+- You can't change someone's permission level to your own permission level, **unless your permission level is Owner (3), in which case you can change anyone's permission level to any permission level including Owner (3)**
+- You can't change your own permission level.
+
+Required permission level: 2 (Manage)
+
+```json
+POST /users
+{
+	"authProvider": "reddit",
+	"authId": "7qne6haa9",
+	"permissionLevel": 2
+}
+```
+
+```json
+200 OK
+{
+	"authProvider": "reddit",
+	"authId": "7qne6haa9",
+	"authUsername": "april83c",
+	"permissionLevel": 2
+}
+```
+
+### DELETE /users/me
+
+Deletes the currently logged in user.
+
+```json
+DELETE /users/me
+```
+
+```json
+200 OK
 ```
 
 ## Notify (HTTP)

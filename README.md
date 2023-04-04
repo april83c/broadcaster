@@ -26,7 +26,7 @@ By default, Broadcaster does not log outgoing notifications to a file. However, 
 
 To get modules to work correctly in Visual Studio Code:
 
-1. `yarn dlx @yarnpkg/sdks vscode` (You might not need to do this one???)
+1. `yarn dlx @yarnpkg/sdks vscode` (You might not need to do this one?)
 2. Ctrl+Shift+P in a .ts file
 3. Select TypeScript Version
 4. Use workspace version
