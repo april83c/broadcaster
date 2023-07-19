@@ -15,7 +15,7 @@ function usersAPI(db: JsonDB.JsonDB) {
 				(req.body.authId == undefined 
 				&& req.body.authUsername == undefined)) {
 			return res.status(400).json({
-				error: "No authProvider and/or search parameter specified"
+				error: "Malformed request body. Please see API documentation."
 			});
 		}
 		try {
@@ -54,9 +54,35 @@ function usersAPI(db: JsonDB.JsonDB) {
 		}
 	});
 
-	router.post('/users', checkAuth(PermissionLevel.Manage), (req, res) => {
-		
+	router.post('/users', checkAuth(PermissionLevel.Manage), async (req, res) => {
+		if (req.body.authProvider == undefined || req.body.authId == undefined || 
+			(req.body.permissionLevel == undefined /* && other changeable stuff here */)) {
+			return res.status(400).json({
+				error: 'Malformed request body. Please see API documentation.'
+			});
+		}
+		try {
+			let user = await db.getObject<User>(`/users/${req.body.authProvider}-${req.body.authId}`);
+			let requestUser = req.user as User;
+
+			if (req.body.permissionLevel != undefined &&
+				(requestUser.permissionLevel > user.permissionLevel || requestUser.permissionLevel == PermissionLevel.Owner) && // can't change the permission level of a user with the same permission level as you, unless you're owner
+				(requestUser.permissionLevel > req.body.permissionLevel || requestUser.permissionLevel == PermissionLevel.Owner) && // can't change to your own permission level, unless you're owner
+				(requestUser.authProvider == user.authProvider && requestUser.authId == user.authId) // can't change your own permission level
+				) {
+					
+				user.permissionLevel = req.body.permissionLevel as PermissionLevel; // FIXME: is this bad? can we just "as" this? idk
+			}
+
+			db.push(`/users/${user.authProvider}-${user.authId}`, user, true);
+		} catch {
+			res.status(404).json({
+				error: 'User not found, or an error occured trying to find it'
+			})
+		}
 	});
+
+	// TODO: DELETE /users/me - Deletes the currently logged in user.
 	
 	return router;
 }
