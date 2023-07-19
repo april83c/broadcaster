@@ -9,7 +9,7 @@ import { PermissionLevel, User } from '../Users.js';
 function usersAPI(db: JsonDB.JsonDB) {
 	const router = express.Router();
 
-	router.get('/users', jsonParser, async (req, res) => {
+	router.get('/users', checkAuth(PermissionLevel.Manage), jsonParser, async (req, res) => {
 		// TODO: check if authProvider or Id contain a dot (to prevent traversing to different parts of the database)
 		if (req.body.authProvider == undefined || 
 				(req.body.authId == undefined 
@@ -42,9 +42,21 @@ function usersAPI(db: JsonDB.JsonDB) {
 		}
 	});
 
-	/*router.post('/users', checkAuth(PermissionLevel.Manage), (req, res) => {
+	router.get('/users/me', checkAuth(PermissionLevel.None), jsonParser, async (req, res) => {
+		try {
+			let requestUser = req.user as User;
+			let dbUser = await db.getObject<User>(`/users/${requestUser.authProvider}-${requestUser.authId}`);
+			res.status(200).json(dbUser);
+		} catch {
+			res.status(404).json({
+				error: 'User not found, or an error occured trying to find it'
+			});
+		}
+	});
 
-	});*/
+	router.post('/users', checkAuth(PermissionLevel.Manage), (req, res) => {
+		
+	});
 	
 	return router;
 }
