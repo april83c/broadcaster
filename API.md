@@ -90,7 +90,13 @@ Returns the specified User, if they exist.
 Request body should be JSON, with:
 
 - `authProvider`: the service the user uses to log in. For now, this can only be `reddit`.
+
+and only one of the following:
+
 - `authId`: the id of the user in the authentication provider.
+- `authUsername`: the name of the user in the authentication provider.
+
+If multiple are provided, `authId` will be prioritized.
 
 Required permission level: 2 (Manage)
 
