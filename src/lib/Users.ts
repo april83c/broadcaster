@@ -67,6 +67,7 @@ function redditVerify(db: JsonDB.JsonDB) {
 }
 
 function serializeUser(user: User, done: passport.DoneCallback) {
+	// TODO: arewe supposed to push to db here...? 
 	done(null, user.authProvider + '-' + user.authId);
 };
 
