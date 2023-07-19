@@ -25,7 +25,7 @@ function notifyAPI(db: JsonDB.JsonDB, listeners: Array<wsWithHeartbeat>) {
 	router.post('/notify', checkAuth(PermissionLevel.SendMessages), jsonParser, async (req, res) => {
 		if (req.body.topic == undefined || req.body.content == undefined) {
 			return res.status(400).json({
-				error: "No topic and/or content specified"
+				error: "Malformed request body. Please see API documentation."
 			})
 		}
 		

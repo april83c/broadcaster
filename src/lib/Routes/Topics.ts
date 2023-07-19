@@ -31,7 +31,7 @@ function topicsAPI(db: JsonDB.JsonDB) {
 	router.post('/topics', checkAuth(PermissionLevel.Manage), jsonParser, async (req: express.Request, res: express.Response) => {
 		if (req.body.id == undefined || req.body.description == undefined) {
 			return res.status(400).json({
-				error: 'No topic ID and/or description specified'
+				error: 'Malformed request body. Please see API documentation.'
 			});
 		}
 
