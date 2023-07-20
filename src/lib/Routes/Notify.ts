@@ -19,7 +19,15 @@ import { Topic, WebsocketEvent } from '../APITypes.js';
 import { checkAuth } from '../CheckAuth.js';
 import { wsWithHeartbeat } from './Listen.js';
 
-function notifyAPI(db: JsonDB.JsonDB, listeners: Array<wsWithHeartbeat>) {
+export interface NotificationObject {
+	e: WebsocketEvent;
+	t: string;
+	c: string;
+	i?: string; // ID, not sent in websocket
+	a?: Date; // creation time, not sent in websocket
+};
+
+function notifyAPI(db: JsonDB.JsonDB, sendNotification: (object: NotificationObject) => void, getListenersLength: () => number) {
 	const router = express.Router();
 
 	router.post('/notify', checkAuth(PermissionLevel.SendMessages), jsonParser, async (req, res) => {
@@ -44,19 +52,17 @@ function notifyAPI(db: JsonDB.JsonDB, listeners: Array<wsWithHeartbeat>) {
 			});
 		}
 	
-		let notificationJson = JSON.stringify({
+		let notificationObject = {
 			e: WebsocketEvent.NewNotification,
 			t: req.body.topic,
 			c: req.body.content // we could do checks to make sure theres no XSS here, but if a bad actor wanted to do XSS they could just spin up their own Broadcaster without the check, so we need to mitigate that in the client
-		});
+		};
 	
-		listeners.forEach(((ws) => {
-			ws.send(notificationJson, (err) => { if (err) console.error('Failed to send notification: ' + err); });
-		}));
+		sendNotification(notificationObject);
 		console.log(`Sent notification on topic ${req.body.topic}: ${req.body.content}`)
 	
 		return res.status(200).json({
-			count: listeners.length
+			count: getListenersLength()
 		});
 	});
 

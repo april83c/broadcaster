@@ -136,11 +136,11 @@ app.post('/auth/logout', (req, res) => {
 app.use(topicsAPI(db)); // FIXME: mount to /topics specifically
 
 // Listen (websocket)
-let { listenAPIRouter, listeners } = listenAPI();
+let { listenAPIRouter, sendNotification, getListenersLength } = listenAPI();
 app.use(listenAPIRouter);
 
 // Notify API
-app.use(notifyAPI(db, listeners));
+app.use(notifyAPI(db, sendNotification, getListenersLength));
 
 // Users API
 app.use(usersAPI(db));
@@ -148,7 +148,7 @@ app.use(usersAPI(db));
 // Panel (user interface for humans to use the API)
 app.get('/', /*checkAuth(PermissionLevel.SendMessages), */async (req, res) => {
 	let topics = await db.getObject<Array<Topic>>('/topics');
-	res.render('panel', { user: req.user, topics: topics, listenerCount: listeners.length });
+	res.render('panel', { user: req.user, topics: topics, listenerCount: getListenersLength() });
 });
 
 app.listen(process.env.BROADCASTER_PORT, () => {

@@ -10,14 +10,49 @@
 
 import { default as ws } from 'ws';
 import * as express from 'express';
+import type { NotificationObject } from "./Notify.js";
 
 interface wsWithHeartbeat extends ws {
 	isAlive?: boolean; // if we don't have this question mark here typescript gets mad when we cast it below, and i'm sure there is a better way to fix that than adding this question mark, but this works
 }
 
+// seconds
+const NOTIFICATIONS_POLL_BACKLOG_LIFETIME = 10;
+const NOTIFICATIONS_POLL_LISTENERS_MEASURE_INTERVAL = 60;
+
 function listenAPI() {
 	const listenAPIRouter = express.Router();
 	let listeners: Array<wsWithHeartbeat> = [];
+	let notificationsBacklog: Array<NotificationObject> = [];
+	let notificationsPollRequests = 0;
+	let notificationsPollListeners = 0;
+
+	function sendNotification(notificationObject: NotificationObject) {
+		let notificationJson = JSON.stringify(notificationObject);
+		for (const ws of listeners) {
+			ws.send(notificationJson, (err: any) => { if (err) console.error('Failed to send notification: ' + err); });
+		}
+
+		notificationObject.a = new Date();
+		notificationObject.i = (+notificationObject.a).toString();
+		notificationsBacklog.push(notificationObject);
+	}
+
+	function getListenersLength() {
+		return listeners.length + notificationsPollListeners;
+	}
+
+	function pollMeasureListeners() {
+		notificationsPollListeners = notificationsPollRequests;
+		notificationsPollRequests = 0;
+	}
+	setInterval(pollMeasureListeners, NOTIFICATIONS_POLL_LISTENERS_MEASURE_INTERVAL * 1000);
+
+	function pollCleanBacklog() {
+		const now = Math.floor(+new Date());
+		notificationsBacklog = notificationsBacklog.filter((obj) => obj.a && ((now - Math.floor(+obj.a)) < NOTIFICATIONS_POLL_BACKLOG_LIFETIME*1000));
+	}
+	setInterval(pollCleanBacklog, NOTIFICATIONS_POLL_BACKLOG_LIFETIME * 1000);
 
 	function handleHeartbeat() {
 		if (listeners.length > 0) {
@@ -61,7 +96,12 @@ function listenAPI() {
 		listeners.push(ws);
 	});
 
-	return { listenAPIRouter, listeners };
+	listenAPIRouter.get("/listen-poll", (req, res) => {
+		notificationsPollRequests++;
+		res.send(JSON.stringify(notificationsBacklog));
+	});
+
+	return { listenAPIRouter, sendNotification, getListenersLength };
 }
 
 export { wsWithHeartbeat, listenAPI };
