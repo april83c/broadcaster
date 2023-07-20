@@ -116,6 +116,92 @@
 				alert(error);
 			})
 		}
+
+		function userLookup() {
+			let username = document.getElementById('userlookup-username');
+			
+			let data = new URLSearchParams({
+				authProvider: 'reddit',
+				authUsername: username.value
+			});
+
+			let request = fetch('/users?' + data, {
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).then((response) => {
+				return response.json();
+			}).then((response) => {
+				if (response.error) {
+					alert(response.error);
+				} else {
+					showUserInTable(response);
+				}
+			}).catch((error) => {
+				alert(error);
+			})
+		}
+
+		function showUserInTable(user) {
+			let tableBody = document.querySelector('#userlookup-table tbody');
+			tableBody.innerHTML = '';
+
+			for (key in user) {
+				let row = tableBody.insertRow(-1);
+
+				let cell1 = row.insertCell(0);
+				let cell2 = row.insertCell(1);
+
+				cell1.innerHTML = key;
+				cell2.innerHTML = user[key];
+
+				if (key == 'permissionLevel') {
+					cell2.innerHTML += ' <td style="width: 1em"><a href="#" id="userlookup-increase-permissionlevel" onclick="changeLookedUpUserPermissionLevel(1)">↑</a><td style="width: 1em"><a href="#" id="userlookup-increase-permissionlevel" onclick="changeLookedUpUserPermissionLevel(-1)">↓</a>'
+				}
+			}
+		}
+
+		function getValueFromTable(table, key) {
+			let valueCell;
+			for (let i = 0; i < table.rows.length; i++) {
+				const keyCell = table.rows[i].cells[0];
+				if (keyCell.textContent.trim() === key) {
+					valueCell = table.rows[i].cells[1];
+					break;
+				}
+			}
+
+			return valueCell ? valueCell.textContent.trim() : null;
+		}
+
+		function changeLookedUpUserPermissionLevel(change) {
+			let tableBody = document.querySelector('#userlookup-table tbody');
+
+			let data = JSON.stringify({
+				authProvider: getValueFromTable(tableBody, 'authProvider'),
+				authId: getValueFromTable(tableBody, 'authId'),
+				permissionLevel: change + parseInt(getValueFromTable(tableBody, 'permissionLevel'))
+			});
+
+			let request = fetch('/users', {
+				method: "POST",
+				body: data,
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).then((response) => {
+				return response.json();
+			}).then((response) => {
+				if (response.error) {
+					alert(response.error);
+				} else {
+					showUserInTable(response);
+				}
+			}).catch((error) => {
+				alert(error);
+			})
+		}
 	</script>
 
 	<style>
@@ -222,6 +308,31 @@
 			<button style="width: 25%" type="button" onclick="addTopic()">Add topic</button>
 		</form>
 	<% } %>
+
+	<% if (user && user.permissionLevel >= 2) { %>
+		<h2>User Management</h2>
+		<form class="topic-form">
+			<!-- TODO: AuthProvider dropdown -->
+			<input style="width: calc(75% - 26px);" type="text" id="userlookup-username" name="Username" placeholder="Username">
+			<button style="width: 25%" type="button" onclick="userLookup()">Find user</button>
+		</form>
+		<table id="userlookup-table">
+			<thead>
+				<tr>
+					<th>
+						Key
+					</th>
+					<th>
+						Value
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+
+			</tbody>
+		</table>
+	<% } %>
+
 	<details>
 		<summary>
 			Copyright (c) 2023 April april(at)dummy.cafe
