@@ -52,7 +52,7 @@ function notifyAPI(db: JsonDB.JsonDB, sendNotification: (object: NotificationObj
 			});
 		}
 	
-		let notificationObject = {
+		const notificationObject: NotificationObject = {
 			e: WebsocketEvent.NewNotification,
 			t: req.body.topic,
 			c: req.body.content // we could do checks to make sure theres no XSS here, but if a bad actor wanted to do XSS they could just spin up their own Broadcaster without the check, so we need to mitigate that in the client
