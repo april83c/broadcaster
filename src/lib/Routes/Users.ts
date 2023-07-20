@@ -71,7 +71,7 @@ function usersAPI(db: JsonDB.JsonDB) {
 			if (req.body.permissionLevel != undefined &&
 				(requestUser.permissionLevel > user.permissionLevel || requestUser.permissionLevel == PermissionLevel.Owner) && // can't change the permission level of a user with the same permission level as you, unless you're owner
 				(requestUser.permissionLevel > req.body.permissionLevel || requestUser.permissionLevel == PermissionLevel.Owner) && // can't change to your own permission level, unless you're owner
-				(requestUser.authProvider != user.authProvider && requestUser.authId != user.authId) && // can't change your own permission level
+				(requestUser.authProvider != user.authProvider || requestUser.authId != user.authId) && // can't change your own permission level
 				(PermissionLevel[req.body.permissionLevel] != undefined) // can't change to a permission level that doesn't exist
 				) {
 					
