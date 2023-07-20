@@ -98,7 +98,7 @@ function listenAPI() {
 
 	listenAPIRouter.get("/listen-poll", (req, res) => {
 		notificationsPollRequests++;
-		res.send(JSON.stringify(notificationsBacklog));
+		res.status(200).json(JSON.stringify(notificationsBacklog));
 	});
 
 	return { listenAPIRouter, sendNotification, getListenersLength };
