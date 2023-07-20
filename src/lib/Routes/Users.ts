@@ -28,7 +28,7 @@ function usersAPI(db: JsonDB.JsonDB) {
 				let found = false;
 				for (const userPath in users) {
 					let user = users[userPath];
-					if (user.authUsername == req.query.authUsername) {
+					if (user.authUsername.toLowerCase() == (req.query.authUsername as string).toLowerCase()) {
 						res.status(200).json(user);
 						found = true;
 						break;
