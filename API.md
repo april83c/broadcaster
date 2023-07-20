@@ -87,7 +87,7 @@ DELETE /topics
 
 Returns the specified User, if they exist.
 
-Request body should be JSON, with:
+Request should have the following query parameters:
 
 - `authProvider`: the service the user uses to log in. For now, this can only be `reddit`.
 
@@ -102,9 +102,8 @@ Required permission level: 2 (Manage)
 
 ```json
 GET /users
-{
-	"authProvider": "reddit",
-	"authId": "7qne6haa9"
+?authProvider=reddit
+&authId=7qne6haa9
 }
 ```
 
@@ -228,3 +227,30 @@ Properties:
 	- (this could be a topic the client isn't aware of but does actually exist (i.e. got added later), so don't error if this is an unknown topic!)
 - `c` (content): the content of the notification
 	- 1000 character limit
+- WebSocket messages do **not** include properties `i` and `a` of [NotificationObject](https://github.com/april83c/broadcaster/blob/8faccbfc020edd8a936829d885e9d0993d8d2dec/src/lib/Routes/Notify.ts#L22).
+
+## Listen Poll (HTTP)
+
+Equivalent to `/listen`, but implemented through polling instead of WebSockets. Meant as a fallback for when a browser doesn't let the userscript connect to the WebSocket.
+
+Returns an Array of [NotificationObject](https://github.com/april83c/broadcaster/blob/8faccbfc020edd8a936829d885e9d0993d8d2dec/src/lib/Routes/Notify.ts#L22)s.
+
+```json
+GET /listen-poll
+```
+
+```
+200 OK
+[
+	{
+		"e": "1",
+		"t": "announcements",
+		"c": "Lorem ipsum dolor sit amet",
+		"i": "1689880572364",
+		"a": "2023-07-20T19:16:12.364Z"
+		
+	}
+]
+```
+
+Required permission level: None
