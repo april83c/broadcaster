@@ -49,6 +49,7 @@ import { checkAuth } from './lib/CheckAuth.js';
 import { topicsAPI } from './lib/Routes/Topics.js';
 import { notifyAPI } from './lib/Routes/Notify.js';
 import { listenAPI } from './lib/Routes/Listen.js';
+import { usersAPI } from './lib/Routes/Users.js';
 
 /*
 	## Actual initialization
@@ -140,6 +141,9 @@ app.use(listenAPIRouter);
 
 // Notify API
 app.use(notifyAPI(db, listeners));
+
+// Users API
+app.use(usersAPI(db));
 
 // Panel (user interface for humans to use the API)
 app.get('/', /*checkAuth(PermissionLevel.SendMessages), */async (req, res) => {

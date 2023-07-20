@@ -19,7 +19,8 @@ import { Request } from 'express';
 enum PermissionLevel {
 	None = 0, // no permissions to do anything
 	SendMessages = 1, 
-	Manage = 2 // manage lets you add/remove topics and manage PermissionLevel of other users
+	Manage = 2, // manage lets you add/remove topics and manage PermissionLevel of other users
+	Owner = 3 // manage permissionlevel of everyone including other owners
 }
 
 interface User extends Express.User {
@@ -66,6 +67,7 @@ function redditVerify(db: JsonDB.JsonDB) {
 }
 
 function serializeUser(user: User, done: passport.DoneCallback) {
+	// TODO: arewe supposed to push to db here...? 
 	done(null, user.authProvider + '-' + user.authId);
 };
 
