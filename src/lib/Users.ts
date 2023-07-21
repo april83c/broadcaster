@@ -57,8 +57,8 @@ function redditVerify(db: JsonDB.JsonDB) {
 
 			//console.log('REASON FOR GETOBJECT CREATING PROFILE:' + reason);
 			if (reason.toString().endsWith('Stopped at users')) {
-				console.log(`${user.authUsername} (${user.authId}) is the first user, setting PermissionLevel to Manage`);
-				user.permissionLevel = PermissionLevel.Manage;
+				console.log(`${user.authUsername} (${user.authId}) is the first user, setting PermissionLevel to Owner`);
+				user.permissionLevel = PermissionLevel.Owner;
 			}
 			db.push(`/users/reddit-${profile.id}`, user);
 			done(null, user);
